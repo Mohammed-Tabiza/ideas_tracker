@@ -42,6 +42,11 @@ class IdeaCreate(BaseModel):
     tags: list[str] = Field(default_factory=list)
     source_type: SourceType = SourceType.INTUITION
     source_context: Optional[str] = None
+    confidence_level: Optional[int] = Field(default=None, ge=1, le=5)
+    estimated_value: Optional[int] = Field(default=None, ge=1, le=5)
+    estimated_effort: Optional[int] = Field(default=None, ge=1, le=5)
+    next_action: Optional[str] = None
+    revisit_at: Optional[datetime] = None
 
 
 class IdeaResponse(BaseModel):
@@ -61,3 +66,14 @@ class IdeaResponse(BaseModel):
     next_action: Optional[str]
     revisit_at: Optional[datetime]
     archived: bool
+
+
+class SortField(str, Enum):
+    created_at = "created_at"
+    last_activity = "last_activity"
+    estimated_value = "estimated_value"
+
+
+class SortOrder(str, Enum):
+    asc = "asc"
+    desc = "desc"
