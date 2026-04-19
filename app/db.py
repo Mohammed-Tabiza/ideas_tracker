@@ -40,9 +40,46 @@ def init_db() -> None:
                 archived INTEGER NOT NULL DEFAULT 0 CHECK(archived IN (0,1))
             );
 
+            CREATE TABLE IF NOT EXISTS idea_events (
+                id TEXT PRIMARY KEY,
+                idea_id TEXT NOT NULL,
+                event_type TEXT NOT NULL
+                    CHECK(event_type IN ('CREATION','TRANSITION','EDIT','NOTE')),
+                from_status TEXT
+                    CHECK(from_status IN ('GERME','EXPLORATION','POC','TRANSMIS','EN_VEILLE','ABANDONNE','REALISE')
+                    OR from_status IS NULL),
+                to_status TEXT
+                    CHECK(to_status IN ('GERME','EXPLORATION','POC','TRANSMIS','EN_VEILLE','ABANDONNE','REALISE')
+                    OR to_status IS NULL),
+                comment TEXT NOT NULL DEFAULT '',
+                reason_code TEXT,
+                created_at TEXT NOT NULL,
+                FOREIGN KEY(idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS idea_links (
+                id TEXT PRIMARY KEY,
+                source_idea_id TEXT NOT NULL,
+                target_idea_id TEXT NOT NULL,
+                link_type TEXT NOT NULL
+                    CHECK(link_type IN ('parent','child','related','duplicate','derived_from')),
+                FOREIGN KEY(source_idea_id) REFERENCES ideas(id) ON DELETE CASCADE,
+                FOREIGN KEY(target_idea_id) REFERENCES ideas(id) ON DELETE CASCADE
+            );
+
+            CREATE VIRTUAL TABLE IF NOT EXISTS ideas_fts USING fts5(
+                idea_id UNINDEXED,
+                title,
+                description,
+                aggregated_events_text
+            );
+
             CREATE INDEX IF NOT EXISTS idx_ideas_status ON ideas(current_status);
             CREATE INDEX IF NOT EXISTS idx_ideas_domain ON ideas(domain);
             CREATE INDEX IF NOT EXISTS idx_ideas_updated ON ideas(updated_at);
             CREATE INDEX IF NOT EXISTS idx_ideas_archived ON ideas(archived);
+            CREATE INDEX IF NOT EXISTS idx_events_idea_id ON idea_events(idea_id);
+            CREATE INDEX IF NOT EXISTS idx_links_source ON idea_links(source_idea_id);
+            CREATE INDEX IF NOT EXISTS idx_links_target ON idea_links(target_idea_id);
             """
         )

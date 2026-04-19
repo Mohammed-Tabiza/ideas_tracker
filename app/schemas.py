@@ -68,6 +68,21 @@ class IdeaResponse(BaseModel):
     archived: bool
 
 
+class IdeaUpdate(BaseModel):
+    title: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    description: Optional[str] = None
+    domain: Optional[Domain] = None
+    tags: Optional[list[str]] = None
+    source_type: Optional[SourceType] = None
+    source_context: Optional[str] = None
+    confidence_level: Optional[int] = Field(default=None, ge=1, le=5)
+    estimated_value: Optional[int] = Field(default=None, ge=1, le=5)
+    estimated_effort: Optional[int] = Field(default=None, ge=1, le=5)
+    next_action: Optional[str] = None
+    revisit_at: Optional[datetime] = None
+    archived: Optional[bool] = None
+
+
 class SortField(str, Enum):
     created_at = "created_at"
     last_activity = "last_activity"
