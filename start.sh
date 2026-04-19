@@ -8,4 +8,13 @@ if [[ -d .venv ]]; then
   source .venv/bin/activate
 fi
 
-uvicorn app.main:app --reload --port 8000
+python -m uvicorn app.main:app --reload --port 8000 &
+BACKEND_PID=$!
+
+cleanup() {
+  kill "$BACKEND_PID" >/dev/null 2>&1 || true
+}
+
+trap cleanup EXIT INT TERM
+
+npm run dev

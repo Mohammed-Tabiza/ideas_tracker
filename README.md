@@ -1,32 +1,27 @@
-# Idea Lifecycle Tracker (v1.3 - bootstrap)
+# Idea Lifecycle Tracker (v1.3)
 
-Ce dossier contient un **nouveau squelette de repo** pour démarrer l'application décrite dans `SPEC.md`.
+Application locale solo pour capturer, suivre et reactiver des idees autour de l'IA, de l'architecture et de la strategie technique.
 
-## Portée implémentée (règle §1)
+## Ce qui est livre
 
-Conformément à la règle d'implémentation prioritaire, cette version implémente uniquement :
-
-- `POST /ideas`
-- `GET /ideas`
-
-Aucun endpoint de timeline, dashboard, scoring ou transition n'est ajouté dans ce lot.
+- backend FastAPI avec SQLite + FTS5
+- frontend React 18 + Vite
+- capture rapide d'idees
+- liste filtree avec recherche full-text
+- fiche idee editable
+- timeline des evenements
+- transitions de statut avec validations metier
+- dashboard minimal de pilotage
 
 ## Stack
 
 - FastAPI
+- React 18
+- Vite
 - sqlite3 natif
 - SQLite local (`data/ideas.db`)
 
 ## Lancer
-
-### Linux / macOS
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-./start.sh
-```
 
 ### Windows
 
@@ -34,40 +29,46 @@ pip install -r requirements.txt
 python -m venv .venv
 .venv\Scripts\activate
 pip install -r requirements.txt
+npm install
 start.bat
 ```
 
-API: <http://127.0.0.1:8000/docs>
+### Linux / macOS
 
-## Endpoints
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+npm install
+./start.sh
+```
 
-### `POST /ideas`
+Frontend: <http://127.0.0.1:5173>
 
-`title` est le seul champ obligatoire.
+API docs: <http://127.0.0.1:8000/docs>
 
-Defaults automatiques appliqués :
+Au premier lancement, l'application cree la base SQLite locale sans injecter de donnees de demonstration.
 
-- `domain = OTHER`
-- `source_type = INTUITION`
-- `current_status = GERME`
-- `archived = false`
+## API disponible
 
-### `GET /ideas`
+### Ideas
 
-Filtres supportés :
+- `POST /ideas`
+- `GET /ideas`
+- `GET /ideas/{id}`
+- `PUT /ideas/{id}`
+- `DELETE /ideas/{id}`
 
-- `status`
-- `domain`
-- `tags=llm,infra`
-- `stale=true` (basé sur `updated_at` > 30 jours)
-- `revisit_before=YYYY-MM-DD`
-- `include_archived=true`
-- `sort=created_at|last_activity|estimated_value`
-- `order=asc|desc`
+### Lifecycle
+
+- `POST /ideas/{id}/transition`
+- `GET /ideas/{id}/events`
+- `GET /ideas/{id}/graph`
+- `GET /search?q=...`
 
 ## Exemples
 
-Création rapide :
+Creation rapide :
 
 ```bash
 curl -X POST http://127.0.0.1:8000/ideas \
@@ -75,14 +76,14 @@ curl -X POST http://127.0.0.1:8000/ideas \
   -d '{"title":"Agentic architecture notebook"}'
 ```
 
-Liste :
+Liste triee par derniere activite :
 
 ```bash
 curl 'http://127.0.0.1:8000/ideas?sort=last_activity&order=desc'
 ```
 
-Inclure les idées archivées :
+Recherche :
 
 ```bash
-curl 'http://127.0.0.1:8000/ideas?include_archived=true'
+curl 'http://127.0.0.1:8000/search?q=notebook'
 ```
