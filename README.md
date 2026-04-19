@@ -2,14 +2,27 @@
 
 Ce dossier contient un **nouveau squelette de repo** pour démarrer l'application décrite dans `SPEC.md`.
 
-## Portée implémentée (règle §1)
+## Avancement actuel
 
-Conformément à la règle d'implémentation prioritaire, cette version implémente uniquement :
+L'application est en **phase backend v1** avec la base "ideas" en place.
 
-- `POST /ideas`
-- `GET /ideas`
+Implémenté :
 
-Aucun endpoint de timeline, dashboard, scoring ou transition n'est ajouté dans ce lot.
+- `POST /ideas` (capture rapide)
+- `GET /ideas` (filtres + tri)
+- `GET /ideas/{id}` (lecture directe, y compris archivé)
+- `PUT /ideas/{id}` (édition)
+- `DELETE /ideas/{id}` (soft delete `archived = true`)
+- tables `idea_events`, `idea_links`, `ideas_fts` initialisées côté SQLite
+- calcul `last_activity` dans `GET /ideas` basé sur `ideas.updated_at` + derniers events
+
+Non implémenté (prochain lot) :
+
+- `POST /ideas/{id}/transition`
+- `GET /ideas/{id}/events`
+- `GET /ideas/{id}/graph`
+- `GET /search`
+- dashboard frontend
 
 ## Stack
 
@@ -59,11 +72,23 @@ Filtres supportés :
 - `status`
 - `domain`
 - `tags=llm,infra`
-- `stale=true` (basé sur `updated_at` > 30 jours)
+- `stale=true` (basé sur `last_activity` > 30 jours)
 - `revisit_before=YYYY-MM-DD`
 - `include_archived=true`
 - `sort=created_at|last_activity|estimated_value`
 - `order=asc|desc`
+
+### `GET /ideas/{id}`
+
+Retourne une idée même si `archived = true`.
+
+### `PUT /ideas/{id}`
+
+Met à jour les champs enrichissables et met à jour `updated_at`.
+
+### `DELETE /ideas/{id}`
+
+Suppression logique : passe `archived=true`.
 
 ## Exemples
 

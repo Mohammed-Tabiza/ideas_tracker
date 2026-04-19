@@ -5,8 +5,8 @@ from datetime import date
 from fastapi import FastAPI, HTTPException, Query
 
 from .db import init_db
-from .repository import create_idea, list_ideas
-from .schemas import Domain, IdeaCreate, IdeaResponse, SortField, SortOrder, Status
+from .repository import archive_idea, create_idea, get_idea_by_id, list_ideas, update_idea
+from .schemas import Domain, IdeaCreate, IdeaResponse, IdeaUpdate, SortField, SortOrder, Status
 
 app = FastAPI(title="Idea Lifecycle Tracker API", version="0.2.0")
 
@@ -49,3 +49,30 @@ def list_ideas_endpoint(
         order=order.value,
     )
     return [IdeaResponse.model_validate(row) for row in rows]
+
+
+@app.get("/ideas/{idea_id}", response_model=IdeaResponse)
+def get_idea_endpoint(idea_id: str) -> IdeaResponse:
+    try:
+        return IdeaResponse.model_validate(get_idea_by_id(idea_id))
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@app.put("/ideas/{idea_id}", response_model=IdeaResponse)
+def update_idea_endpoint(idea_id: str, payload: IdeaUpdate) -> IdeaResponse:
+    try:
+        updated = update_idea(idea_id, payload)
+        return IdeaResponse.model_validate(updated)
+    except ValueError as exc:
+        status_code = 404 if "not found" in str(exc).lower() else 400
+        raise HTTPException(status_code=status_code, detail=str(exc)) from exc
+
+
+@app.delete("/ideas/{idea_id}", response_model=IdeaResponse)
+def archive_idea_endpoint(idea_id: str) -> IdeaResponse:
+    try:
+        archived = archive_idea(idea_id)
+        return IdeaResponse.model_validate(archived)
+    except ValueError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
