@@ -27,6 +27,7 @@ import {
   serializeTags,
   toInputDateTime
 } from "./utils";
+import { buildViewStateAfterIdeaCreate, EMPTY_FILTERS } from "./createViewState";
 
 /* ── Labels de traduction ─────────────────────────────────────── */
 const STATUS_LABELS = {
@@ -88,11 +89,6 @@ const PAGES = [
 const EMPTY_CREATE_FORM = {
   title: "", description: "", domain: "OTHER",
   source_type: "INTUITION", tags: "", source_context: ""
-};
-
-const EMPTY_FILTERS = {
-  status: "", domain: "", tags: "", stale: false,
-  revisit_before: "", sort: "last_activity", order: "desc"
 };
 
 const EMPTY_TRANSITION_FORM = {
@@ -184,6 +180,7 @@ function App() {
   async function handleCreate(event) {
     event.preventDefault(); setError(""); setSuccessMessage("");
     try {
+      const nextViewState = buildViewStateAfterIdeaCreate();
       const payload = {
         title: createForm.title, description: createForm.description || null,
         domain: createForm.domain, source_type: createForm.source_type,
@@ -192,8 +189,10 @@ function App() {
       const created = await createIdea(payload);
       setCreateForm(EMPTY_CREATE_FORM);
       setSuccessMessage("Idée capturée avec succès.");
-      setSearchMode(false); setSearchQuery("");
-      await refreshIdeas({ searchMode: false, searchQuery: "" });
+      setFilters(nextViewState.filters);
+      setSearchMode(nextViewState.searchMode);
+      setSearchQuery(nextViewState.searchQuery);
+      await refreshIdeas(nextViewState);
       setSelectedIdeaId(created.id);
       setPage("ideas");
     } catch (e) { setError(e.message); }
